@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        var id = /*[[${comment.id}]]*/ 'default';
+
+        function updateComment() {
+            let text = $('#text').val();
+
+            let data = { 'text': text };
+
+            if (text == "")
+                alert("댓글 내용을 입력하세요");
+            else {
+                $.ajax({
+                    type: 'PUT',
+                    url: `/api/comments/${id}`,
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function () {
+                        alert("댓글 수정 완료");
+                        window.location.href = "/";
+                    }
+                })
+            }
+        }
+
+        /*]]>*/
+    </script>
+</head>
+<body>
+<div>
+    <textarea id="text" th:text = "${comment.text}"></textarea>
+    <button onclick="updateComment()">수정 완료</button>
+</div>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>pracBlog_Post</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+
+        var id = /*[[${post.id}]]*/ 'default';
+
+        $(document).ready(function () {
+            $('#post-box').empty();
+            getPost(`${id}`);
+            getComments(`${id}`);
+        })
+
+        function getPost(id) {
+            $('#post-box').empty();
+            $.ajax({
+                type: 'GET',
+                url: `/api/posts/id/${id}`,
+                success: function (response) {
+                    let title = response.title;
+                    let name = response.name;
+                    let text = response.text;
+                    let createdAt = response.createdAt;
+                    addOnePost(title, name, text, createdAt);
+                }
+            })
+        }
+        function addOnePost(title, name, text, createdAt) {
+            let tmpHtml = `<div>
+                                <div id="${id}-title">제목: ${title}</div>
+                                <div id="${id}-name">작성자: ${name}</div>
+                                <div id="${id}-text">내용: ${text}</div>
+                                <div>작성시간: ${createdAt}</div>
+                                <button id="${id}-change-post" onclick="location.href='/api/posts/editpage/${id}'">글 수정</button>
+                                <button id="${id}-delete-post" onclick="deletePostAndComment(${id})">글 삭제</button>
+                                <div>
+                                    <textarea id="${id}-text-comment" placeholder="댓글을 입력하세요"></textarea>
+                                    <button onclick="writeComment(${id})">작성완료</button>
+                                </div>
+                                <div id="${id}-comment-box">
+                                </div>
+                            </div>`;
+            $('#post-box').append(tmpHtml);
+        }
+        function deletePostAndComment(id) {
+            $.ajax({
+                type: 'DELETE',
+                url: `/api/posts/${id}`,
+                success: function (response) {
+                    console.log(response);
+                    alert("글을 삭제했습니다");
+                    window.location.reload();
+                },
+                error: function (request,status,error) {
+                    console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+                }
+            })
+        }
+
+
+        function writeComment(id) {
+            let text = $(`#${id}-text-comment`).val();
+            console.log(text);
+            let data = {
+                'text': text
+            };
+
+            if (text == "")
+                alert("댓글 내용을 입력해주세요")
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: `/api/comments/${id}`,
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (response) {
+                        alert("댓글 등록 완료");
+                        window.location.reload();
+                    }
+                })
+            }
+        }
+        function getComments() {
+            $.ajax({
+                type: 'GET',
+                url: '/api/comments',
+                success: function (response) {
+                    for (let i = 0; i < response.length; i++) {
+                        let comment = response[i];
+                        let id = comment.id;
+                        let text = comment.text;
+                        let post_id = comment.post.id;
+                        addComment(id, post_id, text);
+                    }
+                }
+            })
+        }
+        function addComment(id, post_id, text) {
+            console.log(post_id);
+            let tmpHtml = `<div>
+                                <div>${text}</div>
+                                <button id="${id}-change-comment" onclick="location.href='/api/comments/editpage/${id}'">수정</button>
+                                <button id="${id}-delete-comment" onclick="deleteComment(${id})">삭제</button>
+                            </div>`;
+
+            $(`#${post_id}-comment-box`).append(tmpHtml);
+        }
+        function deleteComment(id) {
+            $.ajax({
+                type: 'DELETE',
+                url: `/api/comments/${id}`,
+                success: function (response) {
+                    alert("댓글을 삭제했습니다");
+                    window.location.reload();
+                }
+            })
+        }
+
+
+
+        /*]]>*/
+    </script>
+</head>
+<body>
+    <div id="post-box">
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>pracBlog_Edit</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script th:inline="javascript">
+    /*<![CDATA[*/
+
+        var id = /*[[${post.id}]]*/ 'default';
+
+        function updatePost() {
+            console.log("in updatePost");
+            let name = $('#name').val();
+            let title = $('#title').val();
+            let text = $('#text').val();
+
+            let data = {
+                'name': name,
+                'title': title,
+                'text': text
+            };
+            $.ajax({
+                type: 'PUT',
+                url: `/api/posts/${id}`,
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function () {
+                    alert("글 수정 완료")
+                    window.location.href="/";
+                }
+            })
+        }
+    /*]]>*/
+    </script>
+</head>
+<body>
+    <div>
+        <textarea id="title" th:text = "${post.title}"></textarea>
+        <textarea id="name" th:text = "${post.name}"></textarea>
+        <textarea id="text" th:text = "${post.text}"></textarea>
+        <button onclick="updatePost()">수정 완료</button>
+    </div>
+</body>
+</html>

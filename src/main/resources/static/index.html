@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>pracBlog</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            getPosts();
+        })
+
+        function createPost() {
+            let title = $('#title').val();
+            let name = $('#name').val();
+            let text = $('#text').val();
+            let data = {
+                'name': name,
+                'title': title,
+                'text': text
+            };
+            if (name == "" || title == "" || text == "")
+                alert("빈칸이 존재합니다")
+            else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/api/posts',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (response) {
+                        alert("게시글 작성 완료");
+                        window.location.reload();
+                    }
+                })
+            }
+        }
+        function getPosts() {
+            $('#card-box').empty();
+            $.ajax({
+                type: 'GET',
+                url: '/api/posts',
+                success: function (response) {
+                    for (let i = 0; i < response.length; i++) {
+                        let post = response[i];
+                        let id = post.id;
+                        let name = post.name;
+                        let title = post.title;
+                        let createdAt = post.createdAt;
+                        addPost(id, name, title, createdAt);
+                    }
+                }
+            })
+        }
+        function addPost(id, name, title, createdAt) {
+            let tmpHtml = `<div>
+                            ------------
+                            </div>
+                            <div>
+                                <div id="${id}-title">제목: ${title}</div>
+                                <div id="${id}-name">작성자: ${name}</div>
+                                <div>작성시간: ${createdAt}</div>
+                                <button id="${id}-see-post" onclick="location.href='/api/posts/${id}'">글 보기</button>
+                                <button id="${id}-change-post" onclick="location.href='/api/posts/editpage/${id}'">글 수정</button>
+                                <button id="${id}-delete-post" onclick="deletePostAndComment(${id})">글 삭제</button>
+                            </div>`;
+            $('#card-box').append(tmpHtml);
+        }
+        function deletePostAndComment(id) {
+            $.ajax({
+                type: 'DELETE',
+                url: `/api/posts/${id}`,
+                success: function (response) {
+                    console.log(response);
+                    alert("글을 삭제했습니다");
+                    window.location.reload();
+                },
+                error: function (request,status,error) {
+                    console.log("code:"+request.status+"\n"+"message:"+request.responseText+"\n"+"error:"+error);
+                }
+            })
+        }
+
+
+
+
+
+    </script>
+</head>
+
+<body>
+<div class="post-area">
+    <textarea id="title" placeholder="제목을 입력하세요"></textarea>
+    <textarea id="name" placeholder="작성자 이름을 입력하세요"></textarea>
+    <textarea id="text" placeholder="내용을 입력하세요"></textarea>
+    <button onclick="createPost()">작성완료</button>
+</div>
+<div id="card-box">
+</div>
+</body>
+</html>
